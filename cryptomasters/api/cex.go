@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,17 +18,19 @@ func GetRate(currency string) (*datatypes.Rate, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	response := CEXResponse{}
 	if res.StatusCode == http.StatusOK {
 		bodyBytes, err := io.ReadAll(res.Body)
 		if err != nil {
 			return nil, err
 		}
 
-		json := string(bodyBytes)
-		fmt.Println(json)
+		err = json.Unmarshal(bodyBytes, &response)
+
 	} else {
 		return nil, fmt.Errorf("status code received: %v", res.StatusCode)
 	}
-	rate := datatypes.Rate{Currency: currency, Price: 20}
+	rate := datatypes.Rate{Currency: currency, Price: response.Bid}
 	return &rate, err
 }
